@@ -14,8 +14,8 @@ BOT_NAME = 'test_scrapy'
 SPIDER_MODULES = ['test_scrapy.spiders']
 NEWSPIDER_MODULE = 'test_scrapy.spiders'
 # SPLASH_URL = 'http://47.98.102.190:8050/'
-SPLASH_URL = 'http://47.101.203.73:8050/'
-# SPLASH_URL = 'http://47.103.20.113:8050/'
+# SPLASH_URL = 'http://47.101.203.73:8050/'
+SPLASH_URL = 'http://47.103.20.113:8050/'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'test_scrapy (+http://www.yourdomain.com)'

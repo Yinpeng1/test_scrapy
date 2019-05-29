@@ -7,11 +7,16 @@ from test_scrapy.items import TestScrapyItem
 import urllib
 import requests
 
+# 滚动界面爬取列表https://blog.csdn.net/zhao_5352269/article/details/82885166
+
 # function main(splash, args)
 # splash: on_request(function(requests)
 # request: set_proxy
 # {
+#     host = "http://intramirror:intra123@114.67.89.237",
+#            port = 20700
 # }
+# js = string.format("document.querySelector('#_j_tn_pagination > a:nth-child(%d)').click();",args.page)
 # js = string.format("document.querySelector('#_j_tn_pagination > a.pg-next._j_pageitem').click();", args.page)
 #                   splash:runjs(js)
 #                   assert(splash:wait(2))
@@ -23,24 +28,45 @@ script = """
                   splash:set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
                   assert(splash:go(args.url))
                   assert(splash:wait(1))
+                  return splash:html()
+         end
+         """
+script2 = """
+            function main(splash, args)
+                  splash.images_enabled = false  
+                  splash:set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
+                  assert(splash:go(args.url))
+                  assert(splash:wait(1))
                   js = string.format("document.querySelector('#_j_tn_pagination > a:nth-child(%d)').click();",args.page)
                   splash:runjs(js)
                   assert(splash:wait(2))
                   return splash:html()
          end
          """
-
+script3 = """
+            function main(splash, args)
+                  splash.images_enabled = false  
+                  splash:set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
+                  assert(splash:go(args.url))
+                  assert(splash:wait(1))
+                  js = string.format("document.querySelector('#_j_tn_pagination > a:nth-child(11)').click();
+                                      document.querySelector('#_j_tn_pagination > a:nth-child(%d)').click()", args.page)
+                  splash:runjs(js)
+                  assert(splash:wait(2))
+                  return splash:html()
+         end
+         """
 
 class TestSpiderSpider(scrapy.Spider):
     name = "mafengwo"
     allowed_domains = ["www.mafengwo.cn"]
 
     def start_requests(self):
-        for page in range(1, 9):
-            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', args={'wait': 2, "lua_source": script,
-                                'page': page + 2},
-                                # endpoint='render.html',
-                                splash_headers={"referer": "https://www.mafengwo.cn/"})
+        yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', args={'wait': 2, "lua_source": script},
+                            # endpoint='render.html',
+                            splash_headers={"referer": "https://www.mafengwo.cn/"})
+
+
 
     def parse(self, response):
         # print(response.text)
@@ -72,12 +98,23 @@ class TestSpiderSpider(scrapy.Spider):
             item["briefImg"] = briefImg
             likeNum = i.xpath("./div[@class='tn-wrapper']/div[@class='tn-extra']/span[@class='tn-ding']/em/text()").extract_first()
             item["likeNum"] = likeNum
+            yield item
+        next_page = int(str(currentPageNum)) + 1
+        if next_page <= 9:
+            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
+                                args={'wait': 0.5, "lua_source": script2, "page": next_page + 2}, dont_filter=True,
+                                splash_headers={"referer": "https://www.mafengwo.cn/"})
+        elif 9 < next_page <= 13:
+            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
+                                args={'wait': 0.5, "lua_source": script3, "page": next_page - 4 + 2}, dont_filter=True,
+                                splash_headers={"referer": "https://www.mafengwo.cn/"})
+
             # 详情页
             # yield SplashRequest(detail_url, callback=self.parse_detail,
             #                     args={'wait': 0.5}, dont_filter=True,
             #                     splash_headers={"referer": "https://www.mafengwo.cn/"},
             #                     meta={"data": item})
-            yield item
+        # yield item
         # script2 = """
         #               function main(splash)
         #                   splash.images_enabled = false
