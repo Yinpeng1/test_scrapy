@@ -11,8 +11,6 @@ import requests
 # splash: on_request(function(requests)
 # request: set_proxy
 # {
-#     host = "http://intramirror:intra123@114.67.89.237",
-#            port = 20700
 # }
 # js = string.format("document.querySelector('#_j_tn_pagination > a.pg-next._j_pageitem').click();", args.page)
 #                   splash:runjs(js)
