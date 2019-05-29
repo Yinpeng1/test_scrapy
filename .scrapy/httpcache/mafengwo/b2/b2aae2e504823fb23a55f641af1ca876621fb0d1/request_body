@@ -1,0 +1,10 @@
+{
+    "headers": {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en",
+        "User-Agent": "Mozilla/5.0  Chrome/69.0.3497.100 Safari/537.36"
+    },
+    "lua_source": "\n                            function main(splash, args)\n                              splash:set_user_agent(\"Mozilla/5.0  Chrome/69.0.3497.100 Safari/537.36\")\n                              splash:go(args.url)\n                              splash:wait(5)\n                              return {html=splash:html()}\n                            end\n                        ",
+    "url": "https://www.mafengwo.cn/",
+    "wait": 0.5
+}

@@ -1,0 +1,9 @@
+{
+    "headers": {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en",
+        "User-Agent": "Mozilla/5.0  Chrome/69.0.3497.100 Safari/537.36"
+    },
+    "url": "https://www.mafengwo.cn/",
+    "wait": 0.5
+}
