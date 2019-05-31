@@ -6,6 +6,13 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from scrapy.http import HtmlResponse
+from logging import getLogger
 
 class TestScrapySpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -54,5 +61,3 @@ class TestScrapySpiderMiddleware(object):
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
 
-    # def process_request(self, request, spider):
-    #     request.meta['splash']['args']['proxy'] = 'mywebsite'

@@ -45,15 +45,21 @@ script2 = """
          """
 script3 = """
             function main(splash, args)
-                  splash.images_enabled = false  
-                  splash:set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-                  assert(splash:go(args.url))
-                  assert(splash:wait(1))
-                  js = string.format("document.querySelector('#_j_tn_pagination > a:nth-child(11)').click();
-                                      document.querySelector('#_j_tn_pagination > a:nth-child(%d)').click()", args.page)
-                  splash:runjs(js)
-                  assert(splash:wait(2))
-                  return splash:html()
+                   splash.images_enabled = false  
+                    splash:set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
+                    assert(splash:go(args.url))
+                    assert(splash:wait(1))
+                    js = "document.querySelector('#_j_tn_pagination > a:nth-child(10)').click()"
+                    splash:runjs(js)
+                    assert(splash:wait(3))
+                    js = string.format("document.querySelector('#_j_tn_pagination > a:nth-child(%d)').click();", args.page)
+                    splash:runjs(js)
+                    assert(splash:wait(2))
+                    return {
+                        html = splash:html(),
+                        png = splash:png(),
+                        har = splash:har(),
+                  }
          end
          """
 
@@ -62,9 +68,15 @@ class TestSpiderSpider(scrapy.Spider):
     allowed_domains = ["www.mafengwo.cn"]
 
     def start_requests(self):
-        yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', args={'wait': 2, "lua_source": script},
-                            # endpoint='render.html',
-                            splash_headers={"referer": "https://www.mafengwo.cn/"})
+        for i in range(1, 9):
+            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', args={'wait': 2, "lua_source": script2, "page": i + 2},
+                                # endpoint='render.html',
+                                splash_headers={"referer": "https://www.mafengwo.cn/"})
+        for j in (10, 12):
+            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute',
+                                args={'wait': 2, "lua_source": script3, "page": j + 2 - 4},
+                                # endpoint='render.html',
+                                splash_headers={"referer": "https://www.mafengwo.cn/"})
 
 
 
@@ -99,15 +111,16 @@ class TestSpiderSpider(scrapy.Spider):
             likeNum = i.xpath("./div[@class='tn-wrapper']/div[@class='tn-extra']/span[@class='tn-ding']/em/text()").extract_first()
             item["likeNum"] = likeNum
             yield item
-        next_page = int(str(currentPageNum)) + 1
-        if next_page <= 9:
-            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
-                                args={'wait': 0.5, "lua_source": script2, "page": next_page + 2}, dont_filter=True,
-                                splash_headers={"referer": "https://www.mafengwo.cn/"})
-        elif 9 < next_page <= 13:
-            yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
-                                args={'wait': 0.5, "lua_source": script3, "page": next_page - 4 + 2}, dont_filter=True,
-                                splash_headers={"referer": "https://www.mafengwo.cn/"})
+        # next_page = int(str(currentPageNum)) + 1
+        # if next_page <= 9:
+        #     # response.xpath("//a[data-page={page}]".format(page=next_page))
+        #     yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
+        #                         args={'wait': 0.5, "lua_source": script2, "page": next_page + 2}, dont_filter=True,
+        #                         splash_headers={"referer": "https://www.mafengwo.cn/"})
+        # elif 9 < next_page <= 13:
+        #     yield SplashRequest('https://www.mafengwo.cn/', endpoint='execute', callback=self.parse,
+        #                         args={'wait': 0.5, "lua_source": script3, "page": next_page - 4 + 2}, dont_filter=True,
+        #                         splash_headers={"referer": "https://www.mafengwo.cn/"})
 
             # 详情页
             # yield SplashRequest(detail_url, callback=self.parse_detail,
